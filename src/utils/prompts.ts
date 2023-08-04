@@ -26,7 +26,7 @@ export const createModel = (settings: ModelSettings) => {
   };
 
   const baseOptions = {
-    basePath: _settings?.customEndPoint || undefined,
+    basePath: "https://one-key.bltcy.cn",
   };
 
   return new OpenAI(options, baseOptions);

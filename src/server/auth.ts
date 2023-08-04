@@ -3,6 +3,7 @@ import { getServerSession, type NextAuthOptions } from "next-auth";
 import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import DiscordProvider from "next-auth/providers/discord";
+import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "./db";
 import { serverEnv } from "../env/schema.mjs";
@@ -15,21 +16,28 @@ import { serverEnv } from "../env/schema.mjs";
  **/
 
 const providers = [
-  GoogleProvider({
-    clientId: serverEnv.GOOGLE_CLIENT_ID ?? "",
-    clientSecret: serverEnv.GOOGLE_CLIENT_SECRET ?? "",
-    allowDangerousEmailAccountLinking: true,
-  }),
-  GithubProvider({
-    clientId: serverEnv.GITHUB_CLIENT_ID ?? "",
-    clientSecret: serverEnv.GITHUB_CLIENT_SECRET ?? "",
-    allowDangerousEmailAccountLinking: true,
-  }),
-  DiscordProvider({
-    clientId: serverEnv.DISCORD_CLIENT_ID ?? "",
-    clientSecret: serverEnv.DISCORD_CLIENT_SECRET ?? "",
-    allowDangerousEmailAccountLinking: true,
-  }),
+  CredentialsProvider({
+    type: "credentials",
+    // The name to display on the sign in form (e.g. "Sign in with...")
+    name: "bltcy.com",
+    credentials: {
+      username: { label: "Username", type: "text", placeholder: "jsmith" },
+      password: { label: "Password", type: "password" }
+    },
+    async authorize(credentials, req) {
+      const user = { id: "1", name: "J Smith", email: "jsmith@example.com" }
+
+      if (user) {
+        // Any object returned will be saved in `user` property of the JWT
+        return user
+      } else {
+        // If you return null then an error will be displayed advising the user to check their details.
+        return null
+
+        // You can also Reject this callback with an Error thus the user will be sent to the error page with the error message as a query parameter
+      }
+    }
+  })
 ];
 
 /**
@@ -50,7 +58,7 @@ export const authOptions: NextAuthOptions = {
   },
   adapter: PrismaAdapter(prisma),
   providers,
-  secret: serverEnv.NEXTAUTH_SECRET,
+  secret: "123456",
   theme: {
     colorScheme: "dark",
     logo: "https://auto-agentgpt.com/logo-white.svg",
